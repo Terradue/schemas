@@ -37,7 +37,7 @@ channels:
       workflow.uid:
         description: The executed workflow UID.
       time.reference:
-        description: The tiome reference
+        description: The time reference
     messages:
       defaultMessage:
         name: CalendarEvent
@@ -4715,7 +4715,7 @@ components:
     workflow.uid:
       description: The executed workflow UID.
     time.reference:
-      description: The tiome reference
+      description: The time reference
   schemas:
     BaseCloudEvent:
       title: BaseCloudEvent
