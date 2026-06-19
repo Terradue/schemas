@@ -15,6 +15,7 @@ servers:
 paths:
   /cloud-events:
     post:
+      operationId: sendCloudEvent
       summary: Send CloudEvent.
       description: |
         Sends a structured-mode CloudEvent.
