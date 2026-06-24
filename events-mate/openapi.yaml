@@ -94,11 +94,13 @@ components:
           type: string
           enum:
             - calendar-event
+            - submitted
             - prepared
             - completed
             - failed
             - staged
             - piped
+            - dismissed
           description: |
             Contains a value describing the type of event related to the originating occurrence.
         subject:
