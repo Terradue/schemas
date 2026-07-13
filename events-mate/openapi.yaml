@@ -377,6 +377,16 @@ components:
             description: The Argo Workflow submission time, in ISO string format.
       additionalProperties: false
 
+    DismissedStatus:
+      type: string
+      enum:
+      - 'Unknown'
+      - 'Pending'
+      - 'Running'
+      - 'Succeeded'
+      - 'Failed'
+      - 'Error'
+
     DismissedData:
       title: DismissedData
       allOf:
@@ -386,14 +396,7 @@ components:
         - status
         properties:
           status:
-            type: string
-            enum:
-            - 'Unknown'
-            - 'Pending'
-            - 'Running'
-            - 'Succeeded'
-            - 'Failed'
-            - 'Error'
+            $ref: '#/components/schemas/DismissedStatus'
           time:
             type: string
             format: date-time
