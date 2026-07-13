@@ -1,17 +1,34 @@
-openapi: 3.0.0
+#   Copyright [yyyy] [name of copyright owner]
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+openapi: 3.1.0
+
 info:
   version: 1.0.0
-  title: OGC API - Processes
-  description: This API provides real-time Calrimate events streaming capabilities.
+  title: Stage Events
+  description: This API provides real-time stage events streaming capabilities.
   contact:
     name: Terradue
     email: info@terradue.com
   license:
-    name: Creative Commons Attribution-ShareAlike 4.0 International
-    url: https://creativecommons.org/licenses/by-sa/4.0/
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.txt
+
 servers:
-  - description: Webhook exposed internal service
-    url: http://cloud-events-webhook-eventsource-svc:12000
+- description: Webhook exposed internal service
+  url: http://cloud-events-webhook-eventsource-svc:12000
+
 paths:
   /cloud-events:
     post:
@@ -29,7 +46,16 @@ paths:
         content:
           application/cloudevents+json:
             schema:
-              $ref: '#/components/schemas/CloudEvent'
+              oneOf: 
+              - $ref: '#/components/schemas/CalendarCloudEvent'
+              - $ref: '#/components/schemas/SubmittedCloudEvent'
+              - $ref: '#/components/schemas/DismissedCloudEvent'
+              - $ref: '#/components/schemas/PreparedCloudEvent'
+              - $ref: '#/components/schemas/CompletedCloudEvent'
+              - $ref: '#/components/schemas/FailedCloudEvent'
+              - $ref: '#/components/schemas/PipedCloudEvent'
+              - $ref: '#/components/schemas/StagedCloudEvent'
+              - $ref: '#/components/schemas/OrderedCloudEvent'
             examples:
               Calendar:
                 $ref: '#/components/examples/Calendar'
@@ -47,22 +73,26 @@ paths:
                 $ref: '#/components/examples/Staged'
               Piped:
                 $ref: '#/components/examples/Piped'
-      responses:
+              Ordered:
+                $ref: '#/components/examples/Ordered'
+                responses:
         '200':
           $ref: '#/components/responses/WebhookOk'
+
 components:
+
   parameters:
     X-Kafka-Topic:
       name: X-Kafka-Topic
       in: header
       schema:
         type: string
-        pattern: ^[^.]+\.[^.]+\.(\d+[hmsd]\.calendar|prepared|submitted|completed|failed|piped|staged|dismissed)$
+        pattern: ^[^.]+\.[^.]+\.(\d+[hmsd]\.calendar|prepared|submitted|completed|failed|piped|staged|dismissed|ordered)$
       required: true
       description: |
         The named resource that serves as a feed for messages.
 
-        Pattern is `{{workflow.namespace}}.{{workflow.uid}}.(\d+[hmsd]\.calendar|prepared|completed|failed|piped|staged)`, where:
+        Pattern is `{{workflow.namespace}}.{{workflow.uid}}.(\d+[hmsd]\.calendar|prepared|completed|failed|piped|staged|ordered)`, where:
 
         | Topic                                                         | Semantic                                                                                            |
         |---------------------------------------------------------------|-----------------------------------------------------------------------------------------------------|
@@ -72,16 +102,187 @@ components:
         | `{{workflow.namespace}}.{{workflow.uid}}.failed`              | Workflow failed during its life cycle and CommandLineTools/Calrissian stderr/out logs are collected |
         | `{{workflow.namespace}}.{{workflow.uid}}.piped`               | Feature Collection is generated                                                                     |
         | `{{workflow.namespace}}.{{workflow.uid}}.staged`              | Results are posted in Catalog via `stac-postman`                                                    |
+        | `{{workflow.namespace}}.{{workflow.uid}}.ordered`             | A STAC Item transitioned from `order:status=orderable` to `order:status=ordered`;                   |
+
   schemas:
-    CloudEvent:
+    CalendarCloudEvent:
+      type: object
+      title: CalendarCloudEvent
+      allOf: 
+      -  $ref: "#/components/schemas/BaseCloudEvent"
+      - type: object
+        required: 
+        - type
+        - data
+        properties:
+          type:
+            type: string
+            description: |
+              Contains a value describing the type of event related to the originating occurrence.
+            const: 'calendar-event'
+          data:
+            $ref: '#/components/schemas/CalendarData'
+            description: The event payload.
+
+    SubmittedCloudEvent:
+      type: object
+      title: SubmittedCloudEvent
+      allOf: 
+      -  $ref: "#/components/schemas/BaseCloudEvent"
+      - type: object
+        required: 
+        - type
+        - data
+        properties:
+          type:
+            type: string
+            description: |
+              Contains a value describing the type of event related to the originating occurrence.
+            const: 'submitted'
+          data:
+            $ref: '#/components/schemas/SubmittedData'
+            description: The event payload.
+    
+    DismissedCloudEvent:
+      type: object
+      title: DismissedCloudEvent
+      allOf: 
+      -  $ref: "#/components/schemas/BaseCloudEvent"
+      - type: object
+        required: 
+        - type
+        - data
+        properties:
+          type:
+            type: string
+            description: |
+              Contains a value describing the type of event related to the originating occurrence.
+            const: 'dismissed'
+          data:
+            $ref: '#/components/schemas/DismissedData'
+            description: The event payload.
+
+    PreparedCloudEvent:
+      type: object
+      title: PreparedCloudEvent
+      allOf: 
+      -  $ref: "#/components/schemas/BaseCloudEvent"
+      - type: object
+        required: 
+        - type
+        - data
+        properties:
+          type:
+            type: string
+            description: |
+              Contains a value describing the type of event related to the originating occurrence.
+            const: 'prepared'
+          data:
+            $ref: '#/components/schemas/PreparedData'
+            description: The event payload.
+
+    CompletedCloudEvent:
+      type: object
+      title: CompletedCloudEvent
+      allOf: 
+      -  $ref: "#/components/schemas/BaseCloudEvent"
+      - type: object
+        required: 
+        - type
+        - data
+        properties:
+          type:
+            type: string
+            description: |
+              Contains a value describing the type of event related to the originating occurrence.
+            const: 'completed'
+          data:
+            $ref: '#/components/schemas/CompletedData'
+            description: The event payload.
+
+    FailedCloudEvent:
+      type: object
+      title: FailedCloudEvent
+      allOf: 
+      -  $ref: "#/components/schemas/BaseCloudEvent"
+      - type: object
+        required: 
+        - type
+        - data
+        properties:
+          type:
+            type: string
+            description: |
+              Contains a value describing the type of event related to the originating occurrence.
+            const: 'failed'
+          data:
+            $ref: '#/components/schemas/FailedData'
+            description: The event payload.
+
+    StagedCloudEvent:
+      type: object
+      title: StagedCloudEvent
+      allOf: 
+      -  $ref: "#/components/schemas/BaseCloudEvent"
+      - type: object
+        required: 
+        - type
+        - data
+        properties:
+          type:
+            type: string
+            description: |
+              Contains a value describing the type of event related to the originating occurrence.
+            const: 'staged'
+          data:
+            $ref: '#/components/schemas/StagedData'
+            description: The event payload.
+
+    PipedCloudEvent:
+      type: object
+      title: PipedCloudEvent
+      allOf: 
+      -  $ref: "#/components/schemas/BaseCloudEvent"
+      - type: object
+        required: 
+        - type
+        - data
+        properties:
+          type:
+            type: string
+            description: |
+              Contains a value describing the type of event related to the originating occurrence.
+            const: 'piped'
+          data:
+            $ref: '#/components/schemas/PipedData'
+            description: The event payload.
+
+    OrderedCloudEvent:
+      type: object
+      title: OrderedCloudEvent
+      allOf: 
+      -  $ref: "#/components/schemas/BaseCloudEvent"
+      - type: object
+        required: 
+        - type
+        - data
+        properties:
+          type:
+            type: string
+            description: |
+              Contains a value describing the type of event related to the originating occurrence.
+            const: 'ordered'
+          data:
+            $ref: '#/components/schemas/OrderedData'
+            description: The event payload.
+
+    BaseCloudEvent:
       title: CloudEvent
       type: object
       required:
         - source
-        - type
         - subject
         - partitionkey
-        - data
       properties:
         source:
           type: string
@@ -90,19 +291,6 @@ components:
             Identifies the context in which an event happened.
 
             Pattern is `{{workflow.annotations.calrimate.terradue.com/source}}:{{workflow.namespace}}:{{workflow.annotations.eoap.ogc.org/id}}:{{steps.name}}`.
-        type:
-          type: string
-          enum:
-            - calendar-event
-            - submitted
-            - prepared
-            - completed
-            - failed
-            - staged
-            - piped
-            - dismissed
-          description: |
-            Contains a value describing the type of event related to the originating occurrence.
         subject:
           type: string
           pattern: ^[^:]+:[^:]+:[^:]+$
@@ -116,22 +304,12 @@ components:
             A partition key for the event, typically for the purposes of defining a causal relationship/grouping between multiple events.
 
             _Implementors note_: set it equals to the subject by default.
-        data:
-          oneOf:
-            - $ref: '#/components/schemas/CalendarData'
-            - $ref: '#/components/schemas/SubmittedData'
-            - $ref: '#/components/schemas/DismissedData'
-            - $ref: '#/components/schemas/PreparedData'
-            - $ref: '#/components/schemas/CompletedData'
-            - $ref: '#/components/schemas/FailedData'
-            - $ref: '#/components/schemas/StagedData'
-            - $ref: '#/components/schemas/PipedData'
-          description: The event payload.
+
     BaseData:
       title: BaseData
       type: object
       required:
-        - namespace
+      - namespace
       properties:
         namespace:
           type: string
@@ -158,77 +336,82 @@ components:
           pattern: ^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
           description: |
             The Process version, according to the [Semantic Versioning 2.0.0](https://semver.org/) scheme.
+
     CalendarData:
       title: CalendarData
       allOf:
-        - $ref: '#/components/schemas/BaseData'
-        - type: object
-          required:
-            - event_time
-            - start_time
-            - end_time
-          properties:
-            event_time:
-              type: string
-              format: date-time
-              description: The Argo Events event time, in ISO string format.
-            start_time:
-              type: string
-              format: date-time
-              description: The Start Time event, in ISO string format.
-            end_time:
-              type: string
-              format: date-time
-              description: The End Time event, in ISO string format.
-          additionalProperties: false
+      - $ref: '#/components/schemas/BaseData'
+      - type: object
+        required:
+        - event_time
+        - start_time
+        - end_time
+        properties:
+          event_time:
+            type: string
+            format: date-time
+            description: The Argo Events event time, in ISO string format.
+          start_time:
+            type: string
+            format: date-time
+            description: The Start Time event, in ISO string format.
+          end_time:
+            type: string
+            format: date-time
+            description: The End Time event, in ISO string format.
+        additionalProperties: false
+
     SubmittedData:
       title: SubmittedData
       allOf:
-        - $ref: '#/components/schemas/BaseData'
-        - type: object
-          properties:
-            time:
-              type: string
-              format: date-time
-              description: The Argo Workflow submission time, in ISO string format.
+      - $ref: '#/components/schemas/BaseData'
+      - type: object
+        properties:
+          time:
+            type: string
+            format: date-time
+            description: The Argo Workflow submission time, in ISO string format.
       additionalProperties: false
+
     DismissedData:
       title: DismissedData
       allOf:
-        - $ref: '#/components/schemas/BaseData'
-        - type: object
-          required:
-            - status
-          properties:
-            status:
-              type: string
-              enum:
-                - Unknown
-                - Pending
-                - Running
-                - Succeeded
-                - Failed
-                - Error
-            time:
-              type: string
-              format: date-time
-              description: The Argo Workflow dismission time, in ISO string format.
+      - $ref: '#/components/schemas/BaseData'
+      - type: object
+        required:
+        - status
+        properties:
+          status:
+            type: string
+            enum:
+            - 'Unknown'
+            - 'Pending'
+            - 'Running'
+            - 'Succeeded'
+            - 'Failed'
+            - 'Error'
+          time:
+            type: string
+            format: date-time
+            description: The Argo Workflow dismission time, in ISO string format.
       additionalProperties: false
+
     PreparedData:
       title: PreparedData
       allOf:
-        - $ref: '#/components/schemas/BaseData'
-        - type: object
-          required:
-            - job_id
-            - process_id
-            - inputs
-          properties:
-            inputs:
-              type: object
-              additionalProperties: true
-              description: The dictionary that describes inputs identifiers with related values.
+      - $ref: '#/components/schemas/BaseData'
+      - type: object
+        required:
+        - job_id
+        - process_id
+        - inputs
+        properties:
+          inputs:
+            type: object
+            additionalProperties: true
+            description: The dictionary that describes inputs identifiers with related values.
       additionalProperties: false
+
     Usage:
       type: object
       description: Report of a process total used resources.
@@ -304,40 +487,42 @@ components:
             $ref: '#/components/schemas/ChildUsage'
           description: The executed tasks.
           example:
-            - cpus: 1
-              ram_megabytes: 536.870912
-              disk_megabytes: 99.962848
-              exit_code: 0
-              name: node_crop_6
-              start_time: '2025-03-11T16:20:37Z'
-              finish_time: '2025-03-11T16:21:25Z'
-              elapsed_hours: 0.013333333333333334
-              elapsed_seconds: 48
-              ram_megabyte_hours: 7.158278826666667
-              cpu_hours: 0.013333333333333334
+          - cpus: 1
+            ram_megabytes: 536.870912
+            disk_megabytes: 99.962848
+            exit_code: 0
+            name: node_crop_6
+            start_time: '2025-03-11T16:20:37Z'
+            finish_time: '2025-03-11T16:21:25Z'
+            elapsed_hours: 0.013333333333333334
+            elapsed_seconds: 48
+            ram_megabyte_hours: 7.158278826666667
+            cpu_hours: 0.013333333333333334
+
     CompletedData:
       title: CompletedData
       allOf:
-        - $ref: '#/components/schemas/BaseData'
-        - type: object
-          required:
-            - job_id
-            - process_id
-            - usage
-            - outputs
-          properties:
-            usage:
-              $ref: '#/components/schemas/Usage'
-            outputs:
-              type: object
-              additionalProperties: true
-              description: The dictionary that describes outputs identifiers with related values.
+      - $ref: '#/components/schemas/BaseData'
+      - type: object
+        required:
+        - job_id
+        - process_id
+        - usage
+        - outputs
+        properties:
+          usage:
+            $ref: '#/components/schemas/Usage'
+          outputs:
+            type: object
+            additionalProperties: true
+            description: The dictionary that describes outputs identifiers with related values.
       additionalProperties: false
+
     ErrorDetail:
       type: object
       description: An object to provide explicit details on a problem towards an API consumer.
       required:
-        - detail
+      - detail
       properties:
         detail:
           type: string
@@ -359,6 +544,7 @@ components:
           type: string
           description: A string containing additional provider specific codes to identify the error context.
           maxLength: 50
+
     Exception:
       title: Exception Schema
       description: |-
@@ -367,7 +553,7 @@ components:
         The `exception` referenced by this domain utilize a custom Terradue Problems Registry.
       type: object
       required:
-        - type
+      - type
       properties:
         type:
           type: string
@@ -403,90 +589,156 @@ components:
           maxItems: 1000
           items:
             $ref: '#/components/schemas/ErrorDetail'
+
     FailedData:
       title: FailedData
       allOf:
-        - $ref: '#/components/schemas/BaseData'
-        - type: object
-          required:
-            - job_id
-            - process_id
-            - usage
-          properties:
-            exception:
-              $ref: '#/components/schemas/Exception'
-            usage:
-              $ref: '#/components/schemas/Usage'
-          additionalProperties: false
+      - $ref: '#/components/schemas/BaseData'
+      - type: object
+        required:
+        - job_id
+        - process_id
+        - usage
+        properties:
+          exception:
+            $ref: '#/components/schemas/Exception'
+          usage:
+            $ref: '#/components/schemas/Usage'
+        additionalProperties: false
+
     FeatureCollection:
-      $schema: http://json-schema.org/draft-07/schema#
-      $id: https://geojson.org/schema/FeatureCollection.json
+      # $schema: http://json-schema.org/draft-07/schema#
+      # $id: https://geojson.org/schema/FeatureCollection.json
       title: GeoJSON FeatureCollection
       type: object
       required:
-        - type
-        - features
+      - type
+      - features
       properties:
         type:
           type: string
-          enum:
-            - FeatureCollection
+          const: FeatureCollection
         features:
           type: array
           items:
             title: GeoJSON Feature
             type: object
             required:
-              - type
-              - properties
-              - geometry
+            - type
+            - properties
+            - geometry
             properties:
               type:
                 type: string
-                enum:
-                  - Feature
+                const: Feature
               id:
                 oneOf:
-                  - type: number
-                  - type: string
+                - type: number
+                - type: string
               properties:
-                oneOf:
-                  - type: 'null'
-                  - type: object
+                type: object
+                nullable: true
               geometry:
+                nullable: true
                 oneOf:
-                  - type: 'null'
-                  - title: GeoJSON Point
-                    type: object
-                    required:
-                      - type
-                      - coordinates
-                    properties:
-                      type:
-                        type: string
-                        enum:
-                          - Point
-                      coordinates:
+                - title: GeoJSON Point
+                  type: object
+                  required:
+                    - type
+                    - coordinates
+                  properties:
+                    type:
+                      type: string
+                      const: Point
+                    coordinates:
+                      type: array
+                      minItems: 2
+                      items:
+                        type: number
+                    bbox:
+                      type: array
+                      minItems: 4
+                      items:
+                        type: number
+                - title: GeoJSON LineString
+                  type: object
+                  required:
+                    - type
+                    - coordinates
+                  properties:
+                    type:
+                      type: string
+                      const: LineString
+                    coordinates:
+                      type: array
+                      minItems: 2
+                      items:
                         type: array
                         minItems: 2
                         items:
                           type: number
-                      bbox:
+                    bbox:
+                      type: array
+                      minItems: 4
+                      items:
+                        type: number
+                - title: GeoJSON Polygon
+                  type: object
+                  required:
+                    - type
+                    - coordinates
+                  properties:
+                    type:
+                      type: string
+                      const: Polygon
+                    coordinates:
+                      type: array
+                      items:
                         type: array
                         minItems: 4
                         items:
+                          type: array
+                          minItems: 2
+                          items:
+                            type: number
+                    bbox:
+                      type: array
+                      minItems: 4
+                      items:
+                        type: number
+                - title: GeoJSON MultiPoint
+                  type: object
+                  required:
+                  - type
+                  - coordinates
+                  properties:
+                    type:
+                      type: string
+                      const: MultiPoint
+                    coordinates:
+                      type: array
+                      items:
+                        type: array
+                        minItems: 2
+                        items:
                           type: number
-                  - title: GeoJSON LineString
-                    type: object
-                    required:
-                      - type
-                      - coordinates
-                    properties:
-                      type:
-                        type: string
-                        enum:
-                          - LineString
-                      coordinates:
+                    bbox:
+                      type: array
+                      minItems: 4
+                      items:
+                        type: number
+                - title: GeoJSON MultiLineString
+                  type: object
+                  required:
+                  - type
+                  - coordinates
+                  properties:
+                    type:
+                      type: string
+                      const: MultiLineString
+                    coordinates:
+                      type: array
+                      items:
                         type: array
                         minItems: 2
                         items:
@@ -494,22 +746,23 @@ components:
                           minItems: 2
                           items:
                             type: number
-                      bbox:
-                        type: array
-                        minItems: 4
-                        items:
-                          type: number
-                  - title: GeoJSON Polygon
-                    type: object
-                    required:
-                      - type
-                      - coordinates
-                    properties:
-                      type:
-                        type: string
-                        enum:
-                          - Polygon
-                      coordinates:
+                    bbox:
+                      type: array
+                      minItems: 4
+                      items:
+                        type: number
+                - title: GeoJSON MultiPolygon
+                  type: object
+                  required:
+                  - type
+                  - coordinates
+                  properties:
+                    type:
+                      type: string
+                      const: MultiPolygon
+                    coordinates:
+                      type: array
+                      items:
                         type: array
                         items:
                           type: array
@@ -519,246 +772,165 @@ components:
                             minItems: 2
                             items:
                               type: number
-                      bbox:
-                        type: array
-                        minItems: 4
-                        items:
-                          type: number
-                  - title: GeoJSON MultiPoint
-                    type: object
-                    required:
-                      - type
-                      - coordinates
-                    properties:
-                      type:
-                        type: string
-                        enum:
-                          - MultiPoint
-                      coordinates:
-                        type: array
-                        items:
-                          type: array
-                          minItems: 2
-                          items:
-                            type: number
-                      bbox:
-                        type: array
-                        minItems: 4
-                        items:
-                          type: number
-                  - title: GeoJSON MultiLineString
-                    type: object
-                    required:
-                      - type
-                      - coordinates
-                    properties:
-                      type:
-                        type: string
-                        enum:
-                          - MultiLineString
-                      coordinates:
-                        type: array
-                        items:
-                          type: array
-                          minItems: 2
-                          items:
-                            type: array
-                            minItems: 2
-                            items:
-                              type: number
-                      bbox:
-                        type: array
-                        minItems: 4
-                        items:
-                          type: number
-                  - title: GeoJSON MultiPolygon
-                    type: object
-                    required:
-                      - type
-                      - coordinates
-                    properties:
-                      type:
-                        type: string
-                        enum:
-                          - MultiPolygon
-                      coordinates:
-                        type: array
-                        items:
-                          type: array
-                          items:
-                            type: array
-                            minItems: 4
-                            items:
+                    bbox:
+                      type: array
+                      minItems: 4
+                      items:
+                        type: number
+                - title: GeoJSON GeometryCollection
+                  type: object
+                  required:
+                  - type
+                  - geometries
+                  properties:
+                    type:
+                      type: string
+                      const: GeometryCollection
+                    geometries:
+                      type: array
+                      items:
+                        oneOf:
+                        - title: GeoJSON Point
+                          type: object
+                          required:
+                          - type
+                          - coordinates
+                          properties:
+                            type:
+                              type: string
+                              const: Point
+                            coordinates:
                               type: array
                               minItems: 2
                               items:
                                 type: number
-                      bbox:
-                        type: array
-                        minItems: 4
-                        items:
-                          type: number
-                  - title: GeoJSON GeometryCollection
-                    type: object
-                    required:
-                      - type
-                      - geometries
-                    properties:
-                      type:
-                        type: string
-                        enum:
-                          - GeometryCollection
-                      geometries:
-                        type: array
-                        items:
-                          oneOf:
-                            - title: GeoJSON Point
-                              type: object
-                              required:
-                                - type
-                                - coordinates
-                              properties:
-                                type:
-                                  type: string
-                                  enum:
-                                    - Point
-                                coordinates:
+                            bbox:
+                              type: array
+                              minItems: 4
+                              items:
+                                type: number
+                        - title: GeoJSON LineString
+                          type: object
+                          required:
+                          - type
+                          - coordinates
+                          properties:
+                            type:
+                              type: string
+                              const: LineString
+                            coordinates:
+                              type: array
+                              minItems: 2
+                              items:
+                                type: array
+                                minItems: 2
+                                items:
+                                  type: number
+                            bbox:
+                              type: array
+                              minItems: 4
+                              items:
+                                type: number
+                        - title: GeoJSON Polygon
+                          type: object
+                          required:
+                          - type
+                          - coordinates
+                          properties:
+                            type:
+                              type: string
+                              const: Polygon
+                            coordinates:
+                              type: array
+                              items:
+                                type: array
+                                minItems: 4
+                                items:
                                   type: array
                                   minItems: 2
                                   items:
                                     type: number
-                                bbox:
+                            bbox:
+                              type: array
+                              minItems: 4
+                              items:
+                                type: number
+                        - title: GeoJSON MultiPoint
+                          type: object
+                          required:
+                          - type
+                          - coordinates
+                          properties:
+                            type:
+                              type: string
+                              const: MultiPoint
+                            coordinates:
+                              type: array
+                              items:
+                                type: array
+                                minItems: 2
+                                items:
+                                  type: number
+                            bbox:
+                              type: array
+                              minItems: 4
+                              items:
+                                type: number
+                        - title: GeoJSON MultiLineString
+                          type: object
+                          required:
+                          - type
+                          - coordinates
+                          properties:
+                            type:
+                              type: string
+                              const: MultiLineString
+                            coordinates:
+                              type: array
+                              items:
+                                type: array
+                                minItems: 2
+                                items:
+                                  type: array
+                                  minItems: 2
+                                  items:
+                                    type: number
+                            bbox:
+                              type: array
+                              minItems: 4
+                              items:
+                                type: number
+                        - title: GeoJSON MultiPolygon
+                          type: object
+                          required:
+                          - type
+                          - coordinates
+                          properties:
+                            type:
+                              type: string
+                              const: MultiPolygon
+                            coordinates:
+                              type: array
+                              items:
+                                type: array
+                                items:
                                   type: array
                                   minItems: 4
-                                  items:
-                                    type: number
-                            - title: GeoJSON LineString
-                              type: object
-                              required:
-                                - type
-                                - coordinates
-                              properties:
-                                type:
-                                  type: string
-                                  enum:
-                                    - LineString
-                                coordinates:
-                                  type: array
-                                  minItems: 2
                                   items:
                                     type: array
                                     minItems: 2
                                     items:
                                       type: number
-                                bbox:
-                                  type: array
-                                  minItems: 4
-                                  items:
-                                    type: number
-                            - title: GeoJSON Polygon
-                              type: object
-                              required:
-                                - type
-                                - coordinates
-                              properties:
-                                type:
-                                  type: string
-                                  enum:
-                                    - Polygon
-                                coordinates:
-                                  type: array
-                                  items:
-                                    type: array
-                                    minItems: 4
-                                    items:
-                                      type: array
-                                      minItems: 2
-                                      items:
-                                        type: number
-                                bbox:
-                                  type: array
-                                  minItems: 4
-                                  items:
-                                    type: number
-                            - title: GeoJSON MultiPoint
-                              type: object
-                              required:
-                                - type
-                                - coordinates
-                              properties:
-                                type:
-                                  type: string
-                                  enum:
-                                    - MultiPoint
-                                coordinates:
-                                  type: array
-                                  items:
-                                    type: array
-                                    minItems: 2
-                                    items:
-                                      type: number
-                                bbox:
-                                  type: array
-                                  minItems: 4
-                                  items:
-                                    type: number
-                            - title: GeoJSON MultiLineString
-                              type: object
-                              required:
-                                - type
-                                - coordinates
-                              properties:
-                                type:
-                                  type: string
-                                  enum:
-                                    - MultiLineString
-                                coordinates:
-                                  type: array
-                                  items:
-                                    type: array
-                                    minItems: 2
-                                    items:
-                                      type: array
-                                      minItems: 2
-                                      items:
-                                        type: number
-                                bbox:
-                                  type: array
-                                  minItems: 4
-                                  items:
-                                    type: number
-                            - title: GeoJSON MultiPolygon
-                              type: object
-                              required:
-                                - type
-                                - coordinates
-                              properties:
-                                type:
-                                  type: string
-                                  enum:
-                                    - MultiPolygon
-                                coordinates:
-                                  type: array
-                                  items:
-                                    type: array
-                                    items:
-                                      type: array
-                                      minItems: 4
-                                      items:
-                                        type: array
-                                        minItems: 2
-                                        items:
-                                          type: number
-                                bbox:
-                                  type: array
-                                  minItems: 4
-                                  items:
-                                    type: number
-                      bbox:
-                        type: array
-                        minItems: 4
-                        items:
-                          type: number
+                            bbox:
+                              type: array
+                              minItems: 4
+                              items:
+                                type: number
+                    bbox:
+                      type: array
+                      minItems: 4
+                      items:
+                        type: number
               bbox:
                 type: array
                 minItems: 4
@@ -769,38 +941,41 @@ components:
           minItems: 4
           items:
             type: number
+
     StagedData:
       title: StagedData
       allOf:
-        - $ref: '#/components/schemas/BaseData'
-        - type: object
-          required:
-            - job_id
-            - process_id
-            - outputs
-          properties:
-            outputs:
-              type: object
-              additionalProperties:
-                $ref: '#/components/schemas/FeatureCollection'
-              description: The dictionary that describes outputs identifiers with related STAC Item value(s).
+      - $ref: '#/components/schemas/BaseData'
+      - type: object
+        required:
+        - job_id
+        - process_id
+        - outputs
+        properties:
+          outputs:
+            type: object
+            additionalProperties:
+              $ref: '#/components/schemas/FeatureCollection'
+            description: The dictionary that describes outputs identifiers with related STAC Item value(s).
       additionalProperties: false
+
     PipedData:
       title: PipedData
       allOf:
-        - $ref: '#/components/schemas/BaseData'
-        - type: object
-          required:
-            - job_id
-            - process_id
-            - entries
-          properties:
-            entries:
-              type: object
-              additionalProperties:
-                $ref: '#/components/schemas/FeatureCollection'
-              description: The dictionary that describes outputs identifiers with related STAC Item value.
+      - $ref: '#/components/schemas/BaseData'
+      - type: object
+        required:
+        - job_id
+        - process_id
+        - entries
+        properties:
+          entries:
+            type: object
+            additionalProperties:
+              $ref: '#/components/schemas/FeatureCollection'
+            description: The dictionary that describes outputs identifiers with related STAC Item value.
       additionalProperties: false
+
     ChildUsage:
       type: object
       description: Report of a child process execution used resources.
@@ -859,6 +1034,35 @@ components:
           format: double
           description: The size of the Disk used for the execution, in MegaBytes.
           example: 99.962848
+
+    OrderedData:
+      title: OrderedData
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/BaseData'
+      - type: object
+        required: 
+        - profile
+        - order_id
+        - entries
+        properties:
+          profile:
+            type: string
+            description: The unique profile identifier inside the namespace.
+          order_id:
+            type: string
+            description: The unique Order identifier inside the namespace.
+          properties:
+            type: object
+            additionalProperties: true
+            description: The properties that describe the order.
+          entries:
+            type: object
+            description: The dictionary that describes outputs identifiers with related STAC Item value.
+            additionalProperties:
+              $ref: '#/components/schemas/FeatureCollection'
+        additionalProperties: false
+
   responses:
     WebhookOk:
       description: The Webhook successfully enqueued the CloudEvent.
@@ -869,6 +1073,7 @@ components:
           examples:
             default:
               value: success
+
   examples:
     Calendar:
       summary: Calendar
@@ -882,6 +1087,7 @@ components:
           end_time: '2026-02-10T13:32:13Z'
           event_time: '2026-02-10T13:32:13Z'
           start_time: '2026-02-10T13:32:08Z'
+
     Submitted:
       summary: Submitted
       value:
@@ -894,6 +1100,7 @@ components:
           process_id: pattern-1-v0-2-0
           namespace: alice
           time: '2026-02-10T13:32:13Z'
+
     Dismissed:
       summary: Dismissed
       value:
@@ -907,6 +1114,7 @@ components:
           namespace: alice
           time: '2026-02-10T13:32:13Z'
           status: Succeeded
+
     Prepared:
       summary: Prepared
       value:
@@ -925,6 +1133,7 @@ components:
               - green
               - nir08
             item: https://raw.githubusercontent.com/stac-utils/stac-examples/refs/heads/main/sentinel2/sentinel2-sample.json
+
     Completed:
       summary: Completed
       value:
@@ -964,6 +1173,7 @@ components:
             max_parallel_tasks: 0
           outputs:
             water_bodies: https://raw.githubusercontent.com/stac-utils/stac-examples/refs/heads/main/sentinel2/sentinel2-sample.json
+
     Failed:
       summary: Failed
       value:
@@ -1001,6 +1211,7 @@ components:
             max_parallel_cpus: 7
             max_parallel_ram_megabytes: 3758.0963839999995
             max_parallel_tasks: 0
+
     Staged:
       summary: Staged
       value:
@@ -1164,6 +1375,7 @@ components:
                       href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/qi/SNW_20m.jp2
                       title: Snow (20m)
                       type: image/jp2
+
     Piped:
       summary: Piped
       value:
@@ -1175,6 +1387,170 @@ components:
           job_id: pattern-1
           process_id: pattern-1-v0-2-0
           namespace: alice
+          entries:
+            water_bodies:
+              type: FeatureCollection
+              features:
+                - stac_version: 1.0.0-beta.2
+                  stac_extensions:
+                    - view
+                    - projection
+                  type: Feature
+                  id: S2A_OPER_MSI_L2A_TL_SGS__20180524T190423_A015250_T26SKD_N02.08
+                  collection: sentinel-s2-l2a
+                  links:
+                    - rel: self
+                      href: s3://sentinel-s2-l2a-catalog/tiles/35/V/MK/2018/6/5/0/sentinel2-sample.json
+                    - rel: root
+                      href: s3://sentinel-s2-l2a-catalog/catalog.json
+                    - rel: collection
+                      href: s3://sentinel-s2-l2a-catalog/catalog.json
+                  bbox:
+                    - 25.0815883093
+                    - 62.1306897126
+                    - 27.1935425597
+                    - 63.129387237
+                  geometry:
+                    type: Polygon
+                    coordinates:
+                      - - - -105.160846396
+                          - 39.1656009422
+                        - - -104.947574355
+                          - 39.1750024943
+                        - - -104.949890373
+                          - 39.0512153242
+                        - - -105.161151214
+                          - 39.0436821016
+                        - - -105.160846396
+                          - 39.1656009422
+                  properties:
+                    datetime: '2018-06-05T10:00:27Z'
+                    platform: sentinel-2
+                    gsd: 10
+                    proj:epsg: 32635
+                    eo:cloud_cover: 88.459539
+                    view:sun_azimuth: 176.091667178268
+                  assets:
+                    metadata:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/metadata.xml
+                      title: Tile metadata
+                      type: application/xml
+                      roles:
+                        - metadata
+                    tileInfo:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/tileInfo.json
+                      title: Tile info
+                      type: application/json
+                    productInfo:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/productInfo.json
+                      title: Product info
+                      type: application/json
+                    thumbnail:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/qi/L2A_PVI.jp2
+                      title: True color thumbnail
+                      type: image/jp2
+                      roles:
+                        - thumbnail
+                    B02_10m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/R10m/B02.jp2
+                      title: Band 2 - Blue 0.490 (10m)
+                      type: image/jp2
+                    B03_10m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/R10m/B03.jp2
+                      title: Band 3 - Green 0.560 (10m)
+                      type: image/jp2
+                    B04_10m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/R10m/B04.jp2
+                      title: Band 4 - Red 0.665 (10m)
+                      type: image/jp2
+                    B08_10m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/R10m/B08.jp2
+                      title: Band 8 - NIR 0.842 (10m)
+                      type: image/jp2
+                    AOT_10m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/R10m/AOT.jp2
+                      title: Aerosol Optical Thickness (10m)
+                      type: image/jp2
+                    TCI_10m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/R10m/TCI.jp2
+                      title: True Color Image (10m)
+                      type: image/jp2
+                    WVP_10m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/R10m/WVP.jp2
+                      title: Water Vapor (10m)
+                      type: image/jp2
+                    B02_20m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/R20m/B02.jp2
+                      title: Band 2 - Blue 0.490 (20m)
+                      type: image/jp2
+                    B03_20m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/R20m/B03.jp2
+                      title: Band 3 - Green 0.560 (20m)
+                      type: image/jp2
+                    B04_20m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/R20m/B04.jp2
+                      title: Band 4 - Red 0.665 (20m)
+                      type: image/jp2
+                    B05_20m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/R20m/B05.jp2
+                      title: Band 5 - Vegetation Red Edge 0.705 (20m)
+                      type: image/jp2
+                    B06_20m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/R20m/B06.jp2
+                      title: Band 6 - Vegetation Red Edge 0.740 (20m)
+                      type: image/jp2
+                    B07_20m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/R20m/B07.jp2
+                      title: Band 7 - Vegetation Red Edge 0.783 (20m)
+                      type: image/jp2
+                    B8A_20m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/R20m/B8A.jp2
+                      title: Band 8A - Narrow NIR 0.865 (20m)
+                      type: image/jp2
+                    B11_20m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/R20m/B11.jp2
+                      title: Band 11 - SWIR 1.610 (20m)
+                      type: image/jp2
+                    B12_20m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/R20m/B12.jp2
+                      title: Band 12 - SWIR 2.190 (20m)
+                      type: image/jp2
+                    AOT_20m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/R20m/AOT.jp2
+                      title: Aerosol Optical Thickness (20m)
+                      type: image/jp2
+                    SCL_20m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/R20m/SCL.jp2
+                      title: Scene Classification (20m)
+                      type: image/jp2
+                    TCI_20m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/R20m/TCI.jp2
+                      title: True Color Image (20m)
+                      type: image/jp2
+                    WVP_20m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/R20m/WVP.jp2
+                      title: Water Vapor (20m)
+                      type: image/jp2
+                    CLD_20m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/qi/CLD_20m.jp2
+                      title: Cloud (20m)
+                      type: image/jp2
+                    SNW_20m:
+                      href: s3://sentinel-s2-l2a/tiles/35/V/MK/2018/6/5/0/qi/SNW_20m.jp2
+                      title: Snow (20m)
+                      type: image/jp2
+
+    Ordered:
+      summary: Ordered
+      value:
+        source: 'ordering-api:{namespace}:{profile}:single-item-ordering'
+        type: ordered
+        subject: 'alice:{collection_id}:{feature_id}'
+        partitionkey: 'alice:{collection_id}:{feature_id}'
+        data:
+          namespace: alice
+          profile: profile-1
+          order_id: ord-123
           entries:
             water_bodies:
               type: FeatureCollection
