@@ -963,10 +963,6 @@ components:
           order_id:
             type: string
             description: The unique Order identifier inside the namespace.
-          properties:
-            type: object
-            additionalProperties: true
-            description: The properties that describe the order.
           entries:
             type: object
             description: The dictionary that describes outputs identifiers with related STAC Item value.
