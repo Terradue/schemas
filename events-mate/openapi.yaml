@@ -323,12 +323,6 @@ components:
         namespace:
           type: string
           description: The declarative region that provides a scope to the processes.
-        process_id:
-          type: string
-          description: The unique Process identifier inside the namespace.
-        job_id:
-          type: string
-          description: The unique Job identifier inside the namespace.
         owner_id:
           oneOf: 
           - type: string
@@ -416,6 +410,12 @@ components:
         - process_id
         - inputs
         properties:
+          process_id:
+            type: string
+            description: The unique Process identifier inside the namespace.
+          job_id:
+            type: string
+            description: The unique Job identifier inside the namespace.
           inputs:
             type: object
             additionalProperties: true
@@ -520,6 +520,12 @@ components:
         - usage
         - outputs
         properties:
+          process_id:
+            type: string
+            description: The unique Process identifier inside the namespace.
+          job_id:
+            type: string
+            description: The unique Job identifier inside the namespace.
           usage:
             $ref: '#/components/schemas/Usage'
           outputs:
@@ -610,6 +616,12 @@ components:
         - process_id
         - usage
         properties:
+          process_id:
+            type: string
+            description: The unique Process identifier inside the namespace.
+          job_id:
+            type: string
+            description: The unique Job identifier inside the namespace.
           exception:
             $ref: '#/components/schemas/Exception'
           usage:
@@ -839,6 +851,12 @@ components:
         - process_id
         - outputs
         properties:
+          process_id:
+            type: string
+            description: The unique Process identifier inside the namespace.
+          job_id:
+            type: string
+            description: The unique Job identifier inside the namespace.
           outputs:
             type: object
             additionalProperties:
@@ -856,6 +874,12 @@ components:
         - process_id
         - entries
         properties:
+          process_id:
+            type: string
+            description: The unique Process identifier inside the namespace.
+          job_id:
+            type: string
+            description: The unique Job identifier inside the namespace.
           entries:
             type: object
             additionalProperties:
