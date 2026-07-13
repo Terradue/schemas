@@ -846,7 +846,9 @@ components:
         features:
           type: array
           items:
-            $ref: '#/components/schemas/Feature'
+            anyOf: 
+            - $ref: '#/components/schemas/Feature'
+            - type: object
         bbox:
           type: array
           minItems: 4
