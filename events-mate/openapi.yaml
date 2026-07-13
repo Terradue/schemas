@@ -293,6 +293,7 @@ components:
         - source
         - subject
         - partitionkey
+        - data
       properties:
         type:
           type: string
@@ -318,6 +319,9 @@ components:
             A partition key for the event, typically for the purposes of defining a causal relationship/grouping between multiple events.
 
             _Implementors note_: set it equals to the subject by default.
+        data:
+          $ref: '#/components/schemas/BaseData'
+          description: The event payload.
 
     BaseData:
       title: BaseData
