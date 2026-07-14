@@ -367,7 +367,6 @@ components:
             type: string
             format: date-time
             description: The End Time event, in ISO string format.
-        additionalProperties: false
 
     SubmittedData:
       title: SubmittedData
@@ -379,7 +378,6 @@ components:
             type: string
             format: date-time
             description: The Argo Workflow submission time, in ISO string format.
-      additionalProperties: false
 
     DismissedStatus:
       type: string
@@ -405,7 +403,6 @@ components:
             type: string
             format: date-time
             description: The Argo Workflow dismission time, in ISO string format.
-      additionalProperties: false
 
     PreparedData:
       title: PreparedData
@@ -432,7 +429,6 @@ components:
             type: object
             additionalProperties: true
             description: The dictionary that describes inputs identifiers with related values.
-      additionalProperties: false
 
     Usage:
       type: object
@@ -549,7 +545,6 @@ components:
             type: object
             additionalProperties: true
             description: The dictionary that describes outputs identifiers with related values.
-      additionalProperties: false
 
     ErrorDetail:
       type: object
@@ -648,7 +643,6 @@ components:
             $ref: '#/components/schemas/Exception'
           usage:
             $ref: '#/components/schemas/Usage'
-        additionalProperties: false
 
     BBox:
       type: array
@@ -891,7 +885,6 @@ components:
             additionalProperties:
               $ref: '#/components/schemas/FeatureCollection'
             description: The dictionary that describes outputs identifiers with related STAC Item value(s).
-      additionalProperties: false
 
     PipedData:
       title: PipedData
@@ -919,7 +912,6 @@ components:
             additionalProperties:
               $ref: '#/components/schemas/FeatureCollection'
             description: The dictionary that describes outputs identifiers with related STAC Item value.
-      additionalProperties: false
 
     ChildUsage:
       type: object
@@ -1002,7 +994,6 @@ components:
             description: The dictionary that describes outputs identifiers with related STAC Item value.
             additionalProperties:
               $ref: '#/components/schemas/FeatureCollection'
-        additionalProperties: false
 
   responses:
     WebhookOk:
@@ -1033,12 +1024,10 @@ components:
       summary: Submitted
       value:
         source: seda-dev-platform:workflows:pattern-1-v0-2-0:execute
-        type: prepared
+        type: submitted
         subject: workflows:10d6fec5-b064-4373-bb60-5060ce39d682:pattern-1-v0-2-0-62cpk
         partitionkey: workflows:10d6fec5-b064-4373-bb60-5060ce39d682:pattern-1-v0-2-0-62cpk
         data:
-          job_id: pattern-1
-          process_id: pattern-1-v0-2-0
           namespace: alice
           time: '2026-02-10T13:32:13Z'
 
@@ -1046,7 +1035,7 @@ components:
       summary: Dismissed
       value:
         source: seda-dev-platform:workflows:pattern-1-v0-2-0:dismiss
-        type: prepared
+        type: dismissed
         subject: workflows:10d6fec5-b064-4373-bb60-5060ce39d682:pattern-1-v0-2-0-62cpk
         partitionkey: workflows:10d6fec5-b064-4373-bb60-5060ce39d682:pattern-1-v0-2-0-62cpk
         data:
