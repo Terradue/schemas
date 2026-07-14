@@ -344,11 +344,6 @@ components:
         priority:
           type: string
           description: The right to proceed before other executions.
-        process_version:
-          type: string
-          pattern: ^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
-          description: |
-            The Process version, according to the [Semantic Versioning 2.0.0](https://semver.org/) scheme.
 
     CalendarData:
       title: CalendarData
@@ -425,6 +420,11 @@ components:
           process_id:
             type: string
             description: The unique Process identifier inside the namespace.
+          process_version:
+            type: string
+            pattern: ^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+            description: |
+              The Process version, according to the [Semantic Versioning 2.0.0](https://semver.org/) scheme.
           job_id:
             type: string
             description: The unique Job identifier inside the namespace.
@@ -535,6 +535,11 @@ components:
           process_id:
             type: string
             description: The unique Process identifier inside the namespace.
+          process_version:
+            type: string
+            pattern: ^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+            description: |
+              The Process version, according to the [Semantic Versioning 2.0.0](https://semver.org/) scheme.
           job_id:
             type: string
             description: The unique Job identifier inside the namespace.
@@ -631,6 +636,11 @@ components:
           process_id:
             type: string
             description: The unique Process identifier inside the namespace.
+          process_version:
+            type: string
+            pattern: ^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+            description: |
+              The Process version, according to the [Semantic Versioning 2.0.0](https://semver.org/) scheme.
           job_id:
             type: string
             description: The unique Job identifier inside the namespace.
@@ -868,6 +878,11 @@ components:
           process_id:
             type: string
             description: The unique Process identifier inside the namespace.
+          process_version:
+            type: string
+            pattern: ^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+            description: |
+              The Process version, according to the [Semantic Versioning 2.0.0](https://semver.org/) scheme.
           job_id:
             type: string
             description: The unique Job identifier inside the namespace.
@@ -891,6 +906,11 @@ components:
           process_id:
             type: string
             description: The unique Process identifier inside the namespace.
+          process_version:
+            type: string
+            pattern: ^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+            description: |
+              The Process version, according to the [Semantic Versioning 2.0.0](https://semver.org/) scheme.
           job_id:
             type: string
             description: The unique Job identifier inside the namespace.
