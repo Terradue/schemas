@@ -39,7 +39,7 @@ paths:
         For more information, see [CloudEvents - Version 1.0.2](https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md).
       operationId: sendCloudEvent
       parameters:
-        - $ref: '#/components/parameters/X-Kafka-Topic'
+      - $ref: '#/components/parameters/X-Kafka-Topic'
       requestBody:
         description: A structured-mode CloudEvent.
         required: true
@@ -319,9 +319,6 @@ components:
             A partition key for the event, typically for the purposes of defining a causal relationship/grouping between multiple events.
 
             _Implementors note_: set it equals to the subject by default.
-        data:
-          $ref: '#/components/schemas/BaseData'
-          description: The event payload.
 
     BaseData:
       title: BaseData
@@ -333,9 +330,9 @@ components:
           type: string
           description: The declarative region that provides a scope to the processes.
         owner_id:
-          oneOf: 
-          - type: string
-          - type: "null"
+          type:
+          - string
+          - "null"
           description: The unique Owner identifier to trace the member of the subscription that owns workflow.
         properties:
           type: object
