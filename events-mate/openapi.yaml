@@ -300,16 +300,10 @@ components:
       title: CloudEvent
       type: object
       required:
-        - type
         - source
         - subject
         - partitionkey
-        - data
       properties:
-        type:
-          type: string
-          description: |
-            Contains a value describing the type of event related to the originating occurrence.
         source:
           type: string
           pattern: ^[^:]+:[^:]+:[^:]+:[^:]+$
