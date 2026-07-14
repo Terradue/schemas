@@ -78,6 +78,8 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/WebhookOk'
+        '400':
+          $ref: 'https://eoap.github.io/problems-registry/openapi.yaml#/components/responses/BadRequest'
 
 components:
 
