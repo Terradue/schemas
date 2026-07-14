@@ -75,7 +75,7 @@ paths:
                 $ref: '#/components/examples/Piped'
               Ordered:
                 $ref: '#/components/examples/Ordered'
-                responses:
+      responses:
         '200':
           $ref: '#/components/responses/WebhookOk'
 
