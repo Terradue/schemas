@@ -15,13 +15,44 @@
 version: '3'
 
 includes:
+  json: https://raw.githubusercontent.com/Terradue/taskfile-utils/refs/heads/main/json.yaml
   openapi: https://raw.githubusercontent.com/Terradue/taskfile-utils/refs/heads/main/openapi.yaml
+  quality: https://raw.githubusercontent.com/Terradue/taskfile-utils/refs/heads/main/quality.yaml
 
 tasks:
 
+  default:
+    cmds:
+    - task: quality:check
+    - task: quality:lint
+    - task: quality:test
+
   generate_openapi_doc:
     cmds:
-    - task: openapi:generate_docs
+    - task: openapi:bundle
       vars:
         API: './events-mate/openapi.yaml'
+        OUTPUT: './docs/c4/class/events-mate/openapi.yaml'
+    - task: openapi:generate_docs
+      vars:
+        API: './docs/c4/class/events-mate/openapi.yaml'
         OUTPUT: './docs/c4/class/events-mate/openapi.html'
+
+  generate_models:
+    cmds:
+    - task: json:create_models
+      vars:
+        INPUT_FILE_TYPE: 'openapi'
+        SCHEMA: './docs/c4/class/events-mate/openapi.yaml'
+        OUTPUT: './src/stage_events_client/models.py'
+
+  generate_client_archetype:
+    deps:
+    - generate_openapi_doc
+    cmds:
+    - task: openapi:generate_client
+      vars:
+        API: './docs/c4/class/events-mate/openapi.yaml'
+    - mv ./stage-events-client ./src
+    - rm -rf ./src/stage_events_client/models/
+    - task: generate_models
