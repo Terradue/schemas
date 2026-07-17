@@ -55,13 +55,14 @@ def _get_kwargs(
     | StagedCloudEvent
     | SubmittedCloudEvent,
     x_kafka_topic: str,
+    path: str,
 ) -> dict[str, Any]:
     headers: dict[str, Any] = {}
     headers["X-Kafka-Topic"] = x_kafka_topic
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/cloud-events",
+        "url": path,
     }
 
     _kwargs["json"] = body.model_dump(mode="json")
@@ -232,6 +233,7 @@ def sync_detailed(
     | StagedCloudEvent
     | SubmittedCloudEvent,
     x_kafka_topic: str,
+    path: str = "/cloud-events",
 ) -> Response[
     BadRequest
     | InvalidBodyPropertyFormat
@@ -266,10 +268,7 @@ def sync_detailed(
         Response[BadRequest | InvalidBodyPropertyFormat | InvalidBodyPropertyValue | InvalidParameters | InvalidRequestHeaderFormat | InvalidRequestParameterFormat | InvalidRequestParameterValue | MissingBodyProperty | MissingRequestHeader | MissingRequestParameter | str]
     """
 
-    kwargs = _get_kwargs(
-        body=body,
-        x_kafka_topic=x_kafka_topic,
-    )
+    kwargs = _get_kwargs(body=body, x_kafka_topic=x_kafka_topic, path=path)
 
     response = client.get_httpx_client().request(
         **kwargs,
@@ -346,6 +345,7 @@ async def asyncio_detailed(
     | StagedCloudEvent
     | SubmittedCloudEvent,
     x_kafka_topic: str,
+    path: str = "/cloud-events",
 ) -> Response[
     BadRequest
     | InvalidBodyPropertyFormat
@@ -380,10 +380,7 @@ async def asyncio_detailed(
         Response[BadRequest | InvalidBodyPropertyFormat | InvalidBodyPropertyValue | InvalidParameters | InvalidRequestHeaderFormat | InvalidRequestParameterFormat | InvalidRequestParameterValue | MissingBodyProperty | MissingRequestHeader | MissingRequestParameter | str]
     """
 
-    kwargs = _get_kwargs(
-        body=body,
-        x_kafka_topic=x_kafka_topic,
-    )
+    kwargs = _get_kwargs(body=body, x_kafka_topic=x_kafka_topic, path=path)
 
     response = await client.get_async_httpx_client().request(**kwargs)
 
