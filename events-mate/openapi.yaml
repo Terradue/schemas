@@ -306,11 +306,11 @@ components:
       properties:
         source:
           type: string
-          pattern: ^[^:]+:[^:]+:[^:]+:[^:]+$
+          pattern: ^[^:]+:[^:]+:[^:]+$
           description: |
             Identifies the context in which an event happened.
 
-            Pattern is `{{workflow.annotations.calrimate.terradue.com/source}}:{{workflow.namespace}}:{{workflow.annotations.eoap.ogc.org/id}}:{{steps.name}}`.
+            Pattern is `{workflow.namespace}}:{{workflow.annotations.eoap.ogc.org/id}}:{{steps.name}}`.
         subject:
           type: string
           pattern: ^[^:]+:[^:]+:[^:]+$
