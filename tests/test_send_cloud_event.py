@@ -1,3 +1,17 @@
+# Copyright 2026 Terradue
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from http import HTTPStatus
 import json
 import unittest
@@ -22,6 +36,27 @@ def submitted_event() -> SubmittedCloudEvent:
 
 
 class SendCloudEventTests(unittest.TestCase):
+    def test_sync_omits_kafka_topic_header_when_not_provided(self) -> None:
+        captured: list[httpx.Request] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            captured.append(request)
+            return httpx.Response(200, text="accepted", request=request)
+
+        httpx_client = httpx.Client(
+            base_url="https://events.example.test",
+            transport=httpx.MockTransport(handler),
+        )
+        client = Client(base_url="https://events.example.test").set_httpx_client(
+            httpx_client
+        )
+
+        parsed = send_cloud_event.sync(client=client, body=submitted_event())
+
+        self.assertEqual(parsed, "accepted")
+        self.assertNotIn("X-Kafka-Topic", captured[0].headers)
+        httpx_client.close()
+
     def test_sync_sends_structured_cloud_event_and_parses_success(self) -> None:
         captured: list[httpx.Request] = []
 

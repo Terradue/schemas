@@ -12,4 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit tests for stage_events_client."""
+"""Dependency-light entry point for the optional command-line interface."""
+
+
+def main() -> None:
+    """Run the CLI, or explain how to install its optional dependencies."""
+    try:
+        from .cli import main as cli_main
+    except ModuleNotFoundError as exc:
+        if exc.name != "click":
+            raise
+        raise SystemExit(
+            "The Stage Events CLI is not installed. "
+            "Install it with: pip install 'stage-events-client[cli]'"
+        ) from exc
+
+    cli_main()
+
+
+__all__ = ["main"]

@@ -54,11 +54,12 @@ def _get_kwargs(
     | PreparedCloudEvent
     | StagedCloudEvent
     | SubmittedCloudEvent,
-    x_kafka_topic: str,
+    x_kafka_topic: str | None,
     path: str,
 ) -> dict[str, Any]:
     headers: dict[str, Any] = {}
-    headers["X-Kafka-Topic"] = x_kafka_topic
+    if x_kafka_topic is not None:
+        headers["X-Kafka-Topic"] = x_kafka_topic
 
     _kwargs: dict[str, Any] = {
         "method": "post",
@@ -232,7 +233,7 @@ def sync_detailed(
     | PreparedCloudEvent
     | StagedCloudEvent
     | SubmittedCloudEvent,
-    x_kafka_topic: str,
+    x_kafka_topic: str | None = None,
     path: str = "/cloud-events",
 ) -> Response[
     BadRequest
@@ -255,7 +256,8 @@ def sync_detailed(
     1.0.2](https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md).
 
     Args:
-        x_kafka_topic (str):
+        x_kafka_topic (str | None): Optional Kafka topic sent in the
+            ``X-Kafka-Topic`` request header.
         body (CalendarCloudEvent | CompletedCloudEvent | DismissedCloudEvent | FailedCloudEvent |
             OrderedCloudEvent | PipedCloudEvent | PreparedCloudEvent | StagedCloudEvent |
             SubmittedCloudEvent):
@@ -289,7 +291,7 @@ def sync(
     | PreparedCloudEvent
     | StagedCloudEvent
     | SubmittedCloudEvent,
-    x_kafka_topic: str,
+    x_kafka_topic: str | None = None,
 ) -> (
     BadRequest
     | InvalidBodyPropertyFormat
@@ -312,7 +314,8 @@ def sync(
     1.0.2](https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md).
 
     Args:
-        x_kafka_topic (str):
+        x_kafka_topic (str | None): Optional Kafka topic sent in the
+            ``X-Kafka-Topic`` request header.
         body (CalendarCloudEvent | CompletedCloudEvent | DismissedCloudEvent | FailedCloudEvent |
             OrderedCloudEvent | PipedCloudEvent | PreparedCloudEvent | StagedCloudEvent |
             SubmittedCloudEvent):
@@ -344,7 +347,7 @@ async def asyncio_detailed(
     | PreparedCloudEvent
     | StagedCloudEvent
     | SubmittedCloudEvent,
-    x_kafka_topic: str,
+    x_kafka_topic: str | None = None,
     path: str = "/cloud-events",
 ) -> Response[
     BadRequest
@@ -367,7 +370,8 @@ async def asyncio_detailed(
     1.0.2](https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md).
 
     Args:
-        x_kafka_topic (str):
+        x_kafka_topic (str | None): Optional Kafka topic sent in the
+            ``X-Kafka-Topic`` request header.
         body (CalendarCloudEvent | CompletedCloudEvent | DismissedCloudEvent | FailedCloudEvent |
             OrderedCloudEvent | PipedCloudEvent | PreparedCloudEvent | StagedCloudEvent |
             SubmittedCloudEvent):
@@ -399,7 +403,7 @@ async def asyncio(
     | PreparedCloudEvent
     | StagedCloudEvent
     | SubmittedCloudEvent,
-    x_kafka_topic: str,
+    x_kafka_topic: str | None = None,
 ) -> (
     BadRequest
     | InvalidBodyPropertyFormat
@@ -422,7 +426,8 @@ async def asyncio(
     1.0.2](https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md).
 
     Args:
-        x_kafka_topic (str):
+        x_kafka_topic (str | None): Optional Kafka topic sent in the
+            ``X-Kafka-Topic`` request header.
         body (CalendarCloudEvent | CompletedCloudEvent | DismissedCloudEvent | FailedCloudEvent |
             OrderedCloudEvent | PipedCloudEvent | PreparedCloudEvent | StagedCloudEvent |
             SubmittedCloudEvent):

@@ -3,116 +3,272 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/stage-events-client.svg)](https://pypi.org/project/stage-events-client)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/stage-events-client.svg)](https://pypi.org/project/stage-events-client)
 
-A client library for accessing Stage Events
+Python client for sending structured-mode
+[CloudEvents 1.0.2](https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md)
+to the Stage Events API.
 
-## Usage
-First, create a client:
+The package provides Pydantic models for the supported workflow events and
+synchronous and asynchronous clients built on [HTTPX](https://www.python-httpx.org/).
 
-```python
-from stage_events_client import Client
+## Requirements
 
-client = Client(base_url="https://api.example.com")
+- Python 3.10 or newer
+- A Stage Events API endpoint
+- A bearer token when authentication is enabled
+
+## Installation
+
+```console
+python -m pip install stage-events-client
 ```
 
-If the endpoints you're going to hit require authentication, use `AuthenticatedClient` instead:
+The command-line interface dependencies are optional. Enable the CLI explicitly
+when installing the package:
+
+```console
+python -m pip install 'stage-events-client[cli]'
+```
+
+## Command-line interface
+
+The `stage-events-client` executable provides one command for every supported
+CloudEvent model:
+
+```console
+stage-events-client --help
+stage-events-client submitted --help
+```
+
+Pass the complete destination URL as the command argument. There is no separate
+base URL or endpoint-path setting:
+
+```console
+stage-events-client submitted \
+  https://events.example.com/hooks/cloud-events \
+  --source workflows:example-process:submit \
+  --subject workflows:2f660c57:example-workflow \
+  --data '{"namespace":"workflows","time":"2026-07-18T12:00:00Z"}' \
+  --x-kafka-topic workflows.2f660c57.submitted \
+  --token your-bearer-token
+```
+
+The available commands are `calendar`, `submitted`, `dismissed`, `prepared`,
+`completed`, `failed`, `piped`, `staged`, and `ordered`. Each command validates
+`--data` against its corresponding Pydantic model before sending the request.
+
+`--data` accepts inline JSON, a JSON file prefixed with `@`, or `-` to read from
+standard input:
+
+```console
+stage-events-client prepared https://events.example.com/cloud-events \
+  --source workflows:example-process:prepare \
+  --subject workflows:2f660c57:example-workflow \
+  --data @prepared-data.json
+
+cat submitted-data.json | stage-events-client submitted \
+  https://events.example.com/cloud-events \
+  --source workflows:example-process:submit \
+  --subject workflows:2f660c57:example-workflow \
+  --data -
+```
+
+The partition key defaults to the subject. Override it with `--partition-key`
+when required. The event ID defaults to a generated UUID, the CloudEvents
+specification version defaults to `1.0`, and `--x-kafka-topic` is optional.
+
+The bearer token can be supplied through `--token` or the
+`STAGE_EVENTS_TOKEN` environment variable. Run a command with `--help` for TLS,
+timeout, and all other options.
+
+## Quick start
+
+Create a client, construct an event, and send it with the required Kafka topic:
 
 ```python
+from datetime import datetime, timezone
+from uuid import uuid4
+
 from stage_events_client import AuthenticatedClient
+from stage_events_client.api.default import send_cloud_event
+from stage_events_client.models import SubmittedCloudEvent, SubmittedData
 
-client = AuthenticatedClient(base_url="https://api.example.com", token="SuperSecretToken")
-```
-
-Now call your endpoint and use your models:
-
-```python
-from stage_events_client.models import MyDataModel
-from stage_events_client.api.my_tag import get_my_data_model
-from stage_events_client.types import Response
-
-with client as client:
-    my_data: MyDataModel = get_my_data_model.sync(client=client)
-    # or if you need more info (e.g. status_code)
-    response: Response[MyDataModel] = get_my_data_model.sync_detailed(client=client)
-```
-
-Or do the same thing with an async version:
-
-```python
-from stage_events_client.models import MyDataModel
-from stage_events_client.api.my_tag import get_my_data_model
-from stage_events_client.types import Response
-
-async with client as client:
-    my_data: MyDataModel = await get_my_data_model.asyncio(client=client)
-    response: Response[MyDataModel] = await get_my_data_model.asyncio_detailed(client=client)
-```
-
-By default, when you're calling an HTTPS API it will attempt to verify that SSL is working correctly. Using certificate verification is highly recommended most of the time, but sometimes you may need to authenticate to a server (especially an internal server) using a custom certificate bundle.
-
-```python
 client = AuthenticatedClient(
-    base_url="https://internal_api.example.com", 
-    token="SuperSecretToken",
-    verify_ssl="/path/to/certificate_bundle.pem",
+    base_url="https://events.example.com",
+    token="your-bearer-token",
 )
+
+subject = "workflows:2f660c57:example-workflow"
+event = SubmittedCloudEvent(
+    source="workflows:example-process:submit",
+    subject=subject,
+    partitionkey=subject,
+    specversion="1.0",
+    id=str(uuid4()),
+    data=SubmittedData(
+        namespace="workflows",
+        time=datetime.now(timezone.utc),
+    ),
+)
+
+with client:
+    result = send_cloud_event.sync(
+        client=client,
+        body=event,
+        x_kafka_topic="workflows.2f660c57.submitted",
+    )
+
+print(result)
 ```
 
-You can also disable certificate validation altogether, but beware that **this is a security risk**.
-
-```python
-client = AuthenticatedClient(
-    base_url="https://internal_api.example.com", 
-    token="SuperSecretToken", 
-    verify_ssl=False
-)
-```
-
-Things to know:
-1. Every path/method combo becomes a Python module with four functions:
-    1. `sync`: Blocking request that returns parsed data (if successful) or `None`
-    1. `sync_detailed`: Blocking request that always returns a `Request`, optionally with `parsed` set if the request was successful.
-    1. `asyncio`: Like `sync` but async instead of blocking
-    1. `asyncio_detailed`: Like `sync_detailed` but async instead of blocking
-
-1. All path/query params, and bodies become method arguments.
-1. If your endpoint had any tags on it, the first tag will be used as a module name for the function (my_tag above)
-1. Any endpoint which did not have a tag will be in `stage_events_client.api.default`
-
-## Advanced customizations
-
-There are more settings on the generated `Client` class which let you control more runtime behavior, check out the docstring on that class for more info. You can also customize the underlying `httpx.Client` or `httpx.AsyncClient` (depending on your use-case):
+Use `Client` instead when the API does not require authentication:
 
 ```python
 from stage_events_client import Client
 
-def log_request(request):
-    print(f"Request event hook: {request.method} {request.url} - Waiting for response")
-
-def log_response(response):
-    request = response.request
-    print(f"Response event hook: {request.method} {request.url} - Status {response.status_code}")
-
-client = Client(
-    base_url="https://api.example.com",
-    httpx_args={"event_hooks": {"request": [log_request], "response": [log_response]}},
-)
-
-# Or get the underlying httpx client to modify directly with client.get_httpx_client() or client.get_async_httpx_client()
+client = Client(base_url="https://events.example.com")
 ```
 
-You can even set the httpx client directly, but beware that this will override any existing settings (e.g., base_url):
+### Detailed responses
+
+`sync` returns the parsed response body. Use `sync_detailed` when the status,
+headers, or raw response body are also needed:
+
+```python
+response = send_cloud_event.sync_detailed(
+    client=client,
+    body=event,
+    x_kafka_topic="workflows.2f660c57.submitted",
+)
+
+print(response.status_code)
+print(response.headers)
+print(response.content)
+print(response.parsed)
+```
+
+A successful `200` response is parsed as a string. Documented `400` responses
+are parsed into the corresponding problem-details model. An undocumented status
+returns `None` unless `raise_on_unexpected_status=True` is set on the client, in
+which case `stage_events_client.errors.UnexpectedStatus` is raised.
+
+### Async usage
+
+Each endpoint has equivalent `asyncio` and `asyncio_detailed` functions:
+
+```python
+import asyncio
+
+
+async def main() -> None:
+    async with client:
+        result = await send_cloud_event.asyncio(
+            client=client,
+            body=event,
+            x_kafka_topic="workflows.2f660c57.submitted",
+        )
+    print(result)
+
+
+asyncio.run(main())
+```
+
+Do not use the same client instance in synchronous and asynchronous context
+managers at the same time.
+
+## Supported events
+
+The request body can be any of the following models from
+`stage_events_client.models`:
+
+| Event type | Model |
+| --- | --- |
+| `calendar-event` | `CalendarCloudEvent` |
+| `submitted` | `SubmittedCloudEvent` |
+| `dismissed` | `DismissedCloudEvent` |
+| `prepared` | `PreparedCloudEvent` |
+| `completed` | `CompletedCloudEvent` |
+| `failed` | `FailedCloudEvent` |
+| `piped` | `PipedCloudEvent` |
+| `staged` | `StagedCloudEvent` |
+| `ordered` | `OrderedCloudEvent` |
+
+The models validate event-specific payloads, timezone-aware timestamps,
+semantic versions, and GeoJSON structures where applicable. Additional standard
+CloudEvent attributes such as `id` and `specversion` are preserved by the
+models.
+
+### Event addressing
+
+The API expects these values:
+
+- `source`: three colon-separated components, normally
+  `{namespace}:{process-id}:{step-name}`.
+- `subject`: three colon-separated components, normally
+  `{namespace}:{workflow-uid}:{workflow-name}`.
+- `partitionkey`: usually the same value as `subject`.
+- `x_kafka_topic`: a topic in the form
+  `{namespace}.{workflow-uid}.{event-suffix}`, such as
+  `workflows.2f660c57.submitted`.
+
+Calendar topics use a duration followed by `.calendar`, for example
+`workflows.2f660c57.10m.calendar`.
+
+## Client configuration
+
+Both `Client` and `AuthenticatedClient` accept shared headers, cookies, timeout,
+TLS verification, redirect handling, and additional HTTPX options:
 
 ```python
 import httpx
-from stage_events_client import Client
 
-client = Client(
-    base_url="https://api.example.com",
+from stage_events_client import AuthenticatedClient
+
+client = AuthenticatedClient(
+    base_url="https://events.example.com",
+    token="your-bearer-token",
+    headers={"X-Correlation-ID": "request-id"},
+    timeout=httpx.Timeout(30.0),
+    verify_ssl="/path/to/ca-bundle.pem",
+    follow_redirects=True,
+    httpx_args={"proxy": "http://proxy.example.com:8080"},
+    raise_on_unexpected_status=True,
 )
-# Note that base_url needs to be re-set, as would any shared cookies, headers, etc.
-client.set_httpx_client(httpx.Client(base_url="https://api.example.com", proxies="http://localhost:8030"))
+```
+
+TLS certificate verification is enabled by default. Setting `verify_ssl=False`
+disables server certificate validation and should only be used in controlled
+development environments.
+
+Clients can be copied with updated settings:
+
+```python
+client = client.with_headers({"X-Correlation-ID": "new-request-id"})
+client = client.with_cookies({"session": "value"})
+client = client.with_timeout(httpx.Timeout(10.0))
+```
+
+An existing `httpx.Client` or `httpx.AsyncClient` can also be supplied with
+`set_httpx_client` or `set_async_httpx_client`. Doing so overrides the generated
+client configuration, so the HTTPX instance must define its own base URL and
+other required settings.
+
+## Development
+
+Install [Hatch](https://hatch.pypa.io/) and run the unit tests:
+
+```console
+hatch run test:test
+```
+
+Other useful checks are:
+
+```console
+hatch run test:cov
+hatch run types:check
+hatch run dev:check
+hatch run dev:lint
 ```
 
 ## License
 
-[![Apache License, Version 2.0](https://img.shields.io/badge/license-Apache%20License%202.0-blue)](https://www.apache.org/licenses/LICENSE-2.0)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
