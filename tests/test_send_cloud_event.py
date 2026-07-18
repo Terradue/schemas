@@ -18,10 +18,11 @@ import unittest
 
 import httpx
 
+from eoap_problems_registry import MissingRequestHeader
 from stage_events_client import errors
 from stage_events_client.api.default import send_cloud_event
 from stage_events_client.client import Client
-from stage_events_client.models import MissingRequestHeader, SubmittedCloudEvent
+from stage_events_client.models import SubmittedCloudEvent
 
 
 def submitted_event() -> SubmittedCloudEvent:

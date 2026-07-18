@@ -20,11 +20,19 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models import (
-    BadRequest,
     CalendarCloudEvent,
     CompletedCloudEvent,
     DismissedCloudEvent,
     FailedCloudEvent,
+    OrderedCloudEvent,
+    PipedCloudEvent,
+    PreparedCloudEvent,
+    StagedCloudEvent,
+    SubmittedCloudEvent,
+)
+from ...types import Response
+from eoap_problems_registry import (
+    BadRequest,
     InvalidBodyPropertyFormat,
     InvalidBodyPropertyValue,
     InvalidParameters,
@@ -34,13 +42,7 @@ from ...models import (
     MissingBodyProperty,
     MissingRequestHeader,
     MissingRequestParameter,
-    OrderedCloudEvent,
-    PipedCloudEvent,
-    PreparedCloudEvent,
-    StagedCloudEvent,
-    SubmittedCloudEvent,
 )
-from ...types import Response
 
 
 def _get_kwargs(
