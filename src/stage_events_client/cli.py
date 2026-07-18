@@ -21,7 +21,6 @@ from pathlib import Path
 import sys
 from typing import Any, TypeAlias
 from urllib.parse import urlsplit, urlunsplit
-from uuid import uuid4
 
 import click
 import httpx
@@ -123,8 +122,6 @@ def _send_event(
     subject: str,
     partition_key: str | None,
     data: str,
-    event_id: str | None,
-    spec_version: str,
     x_kafka_topic: str | None,
     token: str | None,
     timeout: float,
@@ -135,8 +132,6 @@ def _send_event(
         "source": source,
         "subject": subject,
         "partitionkey": partition_key or subject,
-        "specversion": spec_version,
-        "id": event_id or str(uuid4()),
         "data": _load_data(data),
     }
 
@@ -191,13 +186,6 @@ def _event_command(name: str, event_model: CloudEventModel) -> click.Command:
         required=True,
         metavar="JSON|@FILE|-",
         help="Event data as JSON, @path, or - for standard input.",
-    )
-    @click.option("--event-id", help="CloudEvent ID; defaults to a generated UUID.")
-    @click.option(
-        "--spec-version",
-        default="1.0",
-        show_default=True,
-        help="CloudEvents specification version.",
     )
     @click.option(
         "--x-kafka-topic",

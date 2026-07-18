@@ -31,19 +31,19 @@ python -m pip install 'stage-events-client[cli]'
 
 ## Command-line interface
 
-The `stage-events-client` executable provides one command for every supported
+The `send-stage-event` executable provides one command for every supported
 CloudEvent model:
 
 ```console
-stage-events-client --help
-stage-events-client submitted --help
+send-stage-event --help
+send-stage-event submitted --help
 ```
 
 Pass the complete destination URL as the command argument. There is no separate
 base URL or endpoint-path setting:
 
 ```console
-stage-events-client submitted \
+send-stage-event submitted \
   https://events.example.com/hooks/cloud-events \
   --source workflows:example-process:submit \
   --subject workflows:2f660c57:example-workflow \
@@ -60,12 +60,12 @@ The available commands are `calendar`, `submitted`, `dismissed`, `prepared`,
 standard input:
 
 ```console
-stage-events-client prepared https://events.example.com/cloud-events \
+send-stage-event prepared https://events.example.com/cloud-events \
   --source workflows:example-process:prepare \
   --subject workflows:2f660c57:example-workflow \
   --data @prepared-data.json
 
-cat submitted-data.json | stage-events-client submitted \
+cat submitted-data.json | send-stage-event submitted \
   https://events.example.com/cloud-events \
   --source workflows:example-process:submit \
   --subject workflows:2f660c57:example-workflow \
@@ -73,8 +73,7 @@ cat submitted-data.json | stage-events-client submitted \
 ```
 
 The partition key defaults to the subject. Override it with `--partition-key`
-when required. The event ID defaults to a generated UUID, the CloudEvents
-specification version defaults to `1.0`, and `--x-kafka-topic` is optional.
+when required. The `--x-kafka-topic` option is optional.
 
 The bearer token can be supplied through `--token` or the
 `STAGE_EVENTS_TOKEN` environment variable. Run a command with `--help` for TLS,

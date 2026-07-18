@@ -39,7 +39,7 @@ cli = [
 ]
 
 [project.scripts]
-stage-events-client = "stage_events_client.cli_entrypoint:main"
+send-stage-event = "stage_events_client.cli_entrypoint:main"
 
 [project.urls]
 Documentation = "https://terradue.github.io/stage-events-client/"
@@ -80,16 +80,18 @@ exclude_lines = [
 skip-install = false
 features = ["cli"]
 
-dependencies = []
+dependencies = [
+  "coverage[toml]>=7.0",
+]
 
 
 [tool.hatch.envs.test.scripts]
 test = "python -m unittest discover -s tests -p 'test_*.py'"
 testv = "python -m unittest discover -s tests -p 'test_*.py' -v"
 cov = [
-  "coverage run --source=src/stage_events_client -m unittest discover -s tests -p 'test_*.py'",
-  "coverage combine",
-  "coverage report",
+  "python -m coverage run --source=src/stage_events_client -m unittest discover -s tests -p 'test_*.py'",
+  "python -m coverage combine",
+  "python -m coverage report",
 ]
 test-show-setup = "python -m unittest discover -s tests -p 'test_*.py' -v"
 
