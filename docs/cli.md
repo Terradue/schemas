@@ -128,9 +128,11 @@ cat submitted-data.json | send-stage-event submitted \
 In every input mode, `--data` must resolve to a JSON object rather than an array
 or scalar value.
 
-## Authentication
+## Token authentication
 
-Supply a bearer token with `--token`:
+Use `--token` to authenticate a request with a bearer token. Pass only the token
+value; the CLI adds the `Bearer` scheme and sends it in the `Authorization`
+header:
 
 ```console
 send-stage-event submitted \
@@ -139,6 +141,12 @@ send-stage-event submitted \
   --subject workflows:2f660c57:example-workflow \
   --data @submitted-data.json \
   --token your-bearer-token
+```
+
+The request above includes this header:
+
+```http
+Authorization: Bearer your-bearer-token
 ```
 
 For scripts and CI jobs, use the `STAGE_EVENTS_TOKEN` environment variable so
@@ -153,6 +161,9 @@ send-stage-event submitted \
   --subject workflows:2f660c57:example-workflow \
   --data @submitted-data.json
 ```
+
+If both are set, the value passed with `--token` takes precedence over
+`STAGE_EVENTS_TOKEN`.
 
 When neither form is provided, the request is sent without an `Authorization`
 header.
