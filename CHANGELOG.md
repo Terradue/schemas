@@ -25,6 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump `eoap-problems-registry` dependency >= to `1.2.0`.
 
+### Fixed
+
+- New `ruff` checks
 
 [1.0.3] - 2026-07-23
 

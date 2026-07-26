@@ -16,6 +16,18 @@ from http import HTTPStatus
 from typing import Any
 
 import httpx
+from eoap_problems_registry import (
+    BadRequest,
+    InvalidBodyPropertyFormat,
+    InvalidBodyPropertyValue,
+    InvalidParameters,
+    InvalidRequestHeaderFormat,
+    InvalidRequestParameterFormat,
+    InvalidRequestParameterValue,
+    MissingBodyProperty,
+    MissingRequestHeader,
+    MissingRequestParameter,
+)
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
@@ -31,18 +43,6 @@ from ...models import (
     SubmittedCloudEvent,
 )
 from ...types import Response
-from eoap_problems_registry import (
-    BadRequest,
-    InvalidBodyPropertyFormat,
-    InvalidBodyPropertyValue,
-    InvalidParameters,
-    InvalidRequestHeaderFormat,
-    InvalidRequestParameterFormat,
-    InvalidRequestParameterValue,
-    MissingBodyProperty,
-    MissingRequestHeader,
-    MissingRequestParameter,
-)
 
 
 def _get_kwargs(
