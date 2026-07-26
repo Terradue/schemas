@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from http import HTTPStatus
 import json
 import unittest
+from http import HTTPStatus
 
 import httpx
-
 from eoap_problems_registry import MissingRequestHeader
+
 from stage_events_client import errors
 from stage_events_client.api.default import send_cloud_event
 from stage_events_client.client import Client

@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import unittest
 from http import HTTPStatus
 from io import BytesIO
-import unittest
 
-from stage_events_client.types import File, Response, UNSET, Unset
+from stage_events_client.types import UNSET, File, Response, Unset
 
 
 class SharedTypesTests(unittest.TestCase):

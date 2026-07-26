@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from http import HTTPStatus
 import unittest
+from http import HTTPStatus
 from unittest.mock import patch
 
 from click.testing import CliRunner

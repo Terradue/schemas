@@ -17,10 +17,11 @@
 #   timestamp: 2026-07-20T15:38:15+00:00
 
 from __future__ import annotations
-from pydantic import BaseModel
-from typing import Annotated, Any, Literal
-from pydantic import AnyUrl, AwareDatetime, ConfigDict, Field, RootModel
+
 from enum import Enum
+from typing import Annotated, Any, Literal
+
+from pydantic import AnyUrl, AwareDatetime, BaseModel, ConfigDict, Field, RootModel
 
 
 class BaseCloudEvent(BaseModel):
