@@ -14,7 +14,9 @@
 
 import json
 import unittest
+from datetime import datetime
 from http import HTTPStatus
+from zoneinfo import ZoneInfo
 
 import httpx
 from eoap_problems_registry import MissingRequestHeader
@@ -22,7 +24,7 @@ from eoap_problems_registry import MissingRequestHeader
 from stage_events_client import errors
 from stage_events_client.api.default import send_cloud_event
 from stage_events_client.client import Client
-from stage_events_client.models import SubmittedCloudEvent
+from stage_events_client.models import SubmittedCloudEvent, SubmittedData
 
 
 def submitted_event() -> SubmittedCloudEvent:
@@ -30,9 +32,7 @@ def submitted_event() -> SubmittedCloudEvent:
         source="namespace:process:step",
         subject="namespace:workflow-id:workflow-name",
         partitionkey="namespace:workflow-id:workflow-name",
-        data={"namespace": "namespace", "time": "2026-07-17T12:00:00Z"},
-        specversion="1.0",
-        id="event-id",
+        data=SubmittedData(namespace="namespace", time=datetime.now(ZoneInfo("UTC"))),
     )
 
 
@@ -116,8 +116,10 @@ class SendCloudEventTests(unittest.TestCase):
             x_kafka_topic="workflow-events",
         )
 
-        self.assertIsInstance(parsed, MissingRequestHeader)
-        self.assertEqual(parsed.errors[0].header, "X-Kafka-Topic")
+        assert isinstance(parsed, MissingRequestHeader)
+        errors = parsed.errors
+        assert errors is not None
+        self.assertEqual(errors[0].header, "X-Kafka-Topic")
         httpx_client.close()
 
     def test_unexpected_status_can_return_none(self) -> None:

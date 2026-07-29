@@ -76,6 +76,43 @@ def _get_kwargs(
     return _kwargs
 
 
+def _parse_response_400(
+    data: object,
+) -> (
+    BadRequest
+    | InvalidBodyPropertyFormat
+    | InvalidBodyPropertyValue
+    | InvalidParameters
+    | InvalidRequestHeaderFormat
+    | InvalidRequestParameterFormat
+    | InvalidRequestParameterValue
+    | MissingBodyProperty
+    | MissingRequestHeader
+    | MissingRequestParameter
+):
+    if not isinstance(data, dict):
+        raise TypeError()
+
+    response_types = (
+        BadRequest,
+        InvalidBodyPropertyFormat,
+        InvalidBodyPropertyValue,
+        InvalidParameters,
+        InvalidRequestHeaderFormat,
+        InvalidRequestParameterFormat,
+        InvalidRequestParameterValue,
+        MissingBodyProperty,
+        MissingRequestHeader,
+    )
+    for response_type in response_types:
+        try:
+            return response_type.model_validate(data)
+        except (TypeError, ValueError, AttributeError, KeyError):
+            pass
+
+    return MissingRequestParameter.model_validate(data)
+
+
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
 ) -> (
@@ -93,111 +130,14 @@ def _parse_response(
     | None
 ):
     if response.status_code == 200:
-        response_200 = response.text
-        return response_200
+        return response.text
 
     if response.status_code == 400:
-
-        def _parse_response_400(
-            data: object,
-        ) -> (
-            BadRequest
-            | InvalidBodyPropertyFormat
-            | InvalidBodyPropertyValue
-            | InvalidParameters
-            | InvalidRequestHeaderFormat
-            | InvalidRequestParameterFormat
-            | InvalidRequestParameterValue
-            | MissingBodyProperty
-            | MissingRequestHeader
-            | MissingRequestParameter
-        ):
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                response_400_type_0 = BadRequest.model_validate(data)
-
-                return response_400_type_0
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                response_400_type_1 = InvalidBodyPropertyFormat.model_validate(data)
-
-                return response_400_type_1
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                response_400_type_2 = InvalidBodyPropertyValue.model_validate(data)
-
-                return response_400_type_2
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                response_400_type_3 = InvalidParameters.model_validate(data)
-
-                return response_400_type_3
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                response_400_type_4 = InvalidRequestHeaderFormat.model_validate(data)
-
-                return response_400_type_4
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                response_400_type_5 = InvalidRequestParameterFormat.model_validate(data)
-
-                return response_400_type_5
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                response_400_type_6 = InvalidRequestParameterValue.model_validate(data)
-
-                return response_400_type_6
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                response_400_type_7 = MissingBodyProperty.model_validate(data)
-
-                return response_400_type_7
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                response_400_type_8 = MissingRequestHeader.model_validate(data)
-
-                return response_400_type_8
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            if not isinstance(data, dict):
-                raise TypeError()
-            response_400_type_9 = MissingRequestParameter.model_validate(data)
-
-            return response_400_type_9
-
-        response_400 = _parse_response_400(response.json())
-
-        return response_400
+        return _parse_response_400(response.json())
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
-    else:
-        return None
+    return None
 
 
 def _build_response(
