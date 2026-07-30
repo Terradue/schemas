@@ -28,15 +28,15 @@ classifiers = [
 ]
 dependencies = [
   "attrs==26.1.0",
-  "httpx>=0.23.0,<0.29.0",
+  "httpx==0.28.1",
   "pydantic==2.13.4",
   "eoap-problems-registry>=1.2.0",
-  "typing-extensions>=4.0.0",
+  "typing-extensions==4.16.0",
 ]
 
 [project.optional-dependencies]
 cli = [
-  "click>=8.1,<9",
+  "click>=8.4.2,<9",
 ]
 
 [project.scripts]
