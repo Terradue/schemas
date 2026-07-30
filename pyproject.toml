@@ -28,7 +28,7 @@ classifiers = [
 ]
 dependencies = [
   "attrs==26.1.0",
-  "httpx>=0.23.0,<0.29.0",
+  "httpx>=0.28.1,<0.29.0",
   "pydantic==2.13.4",
   "eoap-problems-registry>=1.2.0",
   "typing-extensions>=4.0.0",
