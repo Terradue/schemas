@@ -75,6 +75,6 @@ nav:
 - Events MATE:
   - Python API: python-api.md
   - CLI: cli.md
-  - OpenAPI: c4/class/events-mate/openapi.html
+  - OpenAPI: c4/class/schemas/openapi.html
 
 copyright: <a href="https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square">Apache License, Version 2.0</a>, by <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>
