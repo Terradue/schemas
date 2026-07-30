@@ -29,7 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Bump `eoap-problems-registry` dependency >= to `1.3.0`.
+- Dependencies bump
+  - `eoap-problems-registry` to `1.3.0`.
+  - `httpx` to `0.28.1`.
+  - `typing-extensions` to `4.16.0`.
 
 [1.0.4] - 2026-07-26
 
