@@ -36,7 +36,7 @@ dependencies = [
 
 [project.optional-dependencies]
 cli = [
-  "click>=8.1,<9",
+  "click>=8.4.2,<9",
 ]
 
 [project.scripts]
@@ -79,7 +79,7 @@ exclude_lines = [
 [tool.hatch.envs.test]
 skip-install = false
 dependencies = [
-  "click>=8.1,<9",
+  "click>=8.4.2,<9",
   "pytest>=8.4,<10",
   "pytest-cov>=6.2,<8",
 ]
