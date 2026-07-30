@@ -23,3 +23,9 @@ dmypy.json
 
 /coverage.xml
 /.coverage
+
+.pytest_cache
+.ruff_cache
+.venv
+uv.lock
+.mypy_cache

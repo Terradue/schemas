@@ -31,19 +31,19 @@ tasks:
     cmds:
     - task: openapi:bundle
       vars:
-        API: './events-mate/openapi.yaml'
-        OUTPUT: './docs/c4/class/events-mate/openapi.yaml'
+        API: './schemas/openapi.yaml'
+        OUTPUT: './docs/c4/class/schemas/openapi.yaml'
     - task: openapi:generate_docs
       vars:
-        API: './docs/c4/class/events-mate/openapi.yaml'
-        OUTPUT: './docs/c4/class/events-mate/openapi.html'
+        API: './docs/c4/class/schemas/openapi.yaml'
+        OUTPUT: './docs/c4/class/schemas/openapi.html'
 
   generate_models:
     cmds:
     - task: json:create_models
       vars:
         INPUT_FILE_TYPE: 'openapi'
-        SCHEMA: './docs/c4/class/events-mate/openapi.yaml'
+        SCHEMA: './docs/c4/class/schemas/openapi.yaml'
         OUTPUT: './src/stage_events_client/models.py'
 
   generate_client_archetype:
@@ -52,7 +52,6 @@ tasks:
     cmds:
     - task: openapi:generate_client
       vars:
-        API: './docs/c4/class/events-mate/openapi.yaml'
-    - mv ./stage-events-client ./src
+        API: './docs/c4/class/schemas/openapi.yaml'
     - rm -rf ./src/stage_events_client/models/
     - task: generate_models
