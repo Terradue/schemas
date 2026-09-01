@@ -29,7 +29,7 @@ classifiers = [
 dependencies = [
   "attrs==26.1.0",
   "httpx==0.28.1",
-  "pydantic==2.13.4",
+  "pydantic==2.13.5",
   "eoap-problems-registry>=1.2.0",
   "typing-extensions==4.16.0",
 ]
